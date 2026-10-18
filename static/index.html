@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1E2F4D">
+<title>ShelfTalk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Hind:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1E2F4D; --ink-2:#3D5275; --ink-soft:#E6EBF3;
+  --paper:#F7F8F5; --sheet:#FFFFFF; --line:#D9DEE6;
+  --turmeric:#E9A21B; --turmeric-deep:#B87A06; --turmeric-soft:#FDF1D6;
+  --leaf:#2E7D4F; --leaf-soft:#E2F1E7;
+  --chilli:#C23B22; --chilli-soft:#FBE5E0;
+  --muted:#5F6B7D;
+  --display:"Baloo 2", system-ui, sans-serif;
+  --body:"Hind", system-ui, sans-serif;
+  --dock-h:84px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;
+  -webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--turmeric);outline-offset:2px}
+
+/* ---------- header / day ledger ---------- */
+header{background:var(--ink);color:#fff;padding:14px 16px 0;position:sticky;top:0;z-index:5}
+header > *{max-width:1148px;margin-left:auto;margin-right:auto}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:.2px;line-height:1}
+.brand small{display:block;font-family:var(--body);font-weight:400;font-size:13px;opacity:.75;margin-top:4px;letter-spacing:0}
+.hbtn{background:transparent;border:1.5px solid rgba(255,255,255,.35);color:#fff;border-radius:999px;
+  padding:6px 12px;font-size:14px;font-weight:500;white-space:nowrap}
+.hbtn:hover{border-color:#fff}
+.hbtn.on{background:var(--turmeric);border-color:var(--turmeric);color:var(--ink)}
+.narrow{display:none}
+@media (max-width:480px){.wide{display:none}.narrow{display:inline}.brand{font-size:20px}}
+.day{display:flex;gap:clamp(14px,4vw,28px);margin-top:14px;padding-bottom:12px;overflow-x:auto;scrollbar-width:none}
+.day::-webkit-scrollbar{display:none}
+.fig{min-width:max-content}
+.fig b{display:block;font-family:var(--display);font-weight:700;font-size:clamp(21px,5.6vw,28px);line-height:1.05}
+.fig span{font-size:13px;opacity:.75}
+.fig.warn b{color:#FFC75A}
+nav{display:flex;gap:4px}
+nav button{flex:1;background:transparent;border:0;color:rgba(255,255,255,.7);padding:10px 4px 12px;font-weight:600;
+  border-bottom:3px solid transparent;font-size:15px}
+nav button[aria-selected=true]{color:#fff;border-bottom-color:var(--turmeric)}
+nav .pill{display:inline-block;min-width:20px;padding:0 6px;margin-left:4px;border-radius:999px;background:var(--chilli);
+  color:#fff;font-size:12px;line-height:20px}
+
+/* ---------- layout ---------- */
+main{max-width:1180px;margin:0 auto}
+.pane{display:none;padding:14px 16px calc(var(--dock-h) + 28px)}
+.pane.on{display:block}
+@media (min-width:920px){
+  nav{display:none}
+  main{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px;padding:0 16px}
+  .pane{display:block;padding:18px 0 calc(var(--dock-h) + 28px)}
+  #pane-talk{grid-row:1 / span 2}
+  body .dock{right:auto;padding-left:0;padding-right:0;left:calc(max(0px, (100vw - 1180px) / 2) + 16px);
+    width:calc((min(100vw, 1180px) - 56px) * 0.5349)}
+}
+h2{font-family:var(--display);font-weight:700;font-size:20px;margin:6px 0 10px}
+
+/* ---------- talk feed ---------- */
+.feed{display:flex;flex-direction:column;gap:12px}
+.msg{max-width:88%;padding:10px 14px;border-radius:16px;white-space:pre-wrap;word-wrap:break-word}
+.msg.me{align-self:flex-end;background:var(--ink);color:#fff;border-bottom-right-radius:4px}
+.msg.bot{align-self:flex-start;background:var(--sheet);border:1px solid var(--line);border-bottom-left-radius:4px}
+.msg.err{align-self:stretch;background:var(--chilli-soft);border:1px solid #F0B9AE;color:#7A2414;max-width:none}
+.attach{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.attach img{width:76px;height:76px;object-fit:cover;border-radius:10px;border:2px solid rgba(255,255,255,.4)}
+.voice{display:inline-flex;align-items:center;gap:6px;font-size:14px;opacity:.9}
+.msg-tools{display:flex;gap:8px;align-items:center;margin-top:8px}
+.ghost{background:transparent;border:0;color:var(--ink-2);font-size:14px;padding:2px 0;text-decoration:underline;text-underline-offset:3px}
+
+/* the receipt slip: what the agent actually changed */
+.slip{align-self:flex-start;width:min(88%,420px);background:var(--sheet);position:relative;padding:12px 14px 10px;
+  border:1px solid var(--line);border-top:0;font-size:14px;margin-top:-4px}
+.slip::before{content:"";position:absolute;left:-1px;right:-1px;top:-8px;height:8px;
+  background:linear-gradient(-45deg,var(--sheet) 4px,transparent 0) 0 0/10px 8px repeat-x,
+             linear-gradient(45deg,var(--sheet) 4px,transparent 0) 0 0/10px 8px repeat-x}
+.slip h3{margin:0 0 6px;font-family:var(--display);font-size:15px;font-weight:700;color:var(--muted)}
+.slip ul{list-style:none;margin:0;padding:0}
+.slip li{display:flex;gap:8px;padding:5px 0;border-bottom:1px dashed var(--line)}
+.slip li:last-child{border-bottom:0}
+.slip .k{flex:none;width:18px;text-align:center;font-weight:700}
+.slip li.w .k{color:var(--turmeric-deep)}
+.slip li.r{color:var(--muted)}
+.slip li.bad{color:var(--chilli)}
+.slip .foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;color:var(--muted);font-size:13px}
+.slip.undone{opacity:.55}
+.slip.undone li{text-decoration:line-through}
+
+.empty{background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:18px}
+.empty p{margin:0 0 12px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--ink-soft);border:0;border-radius:999px;padding:8px 14px;font-size:15px;color:var(--ink);text-align:left}
+.chip:hover{background:#D5DEEB}
+.thinking{align-self:flex-start;color:var(--muted);font-size:15px;display:flex;gap:8px;align-items:center}
+.dots span{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--turmeric);margin-right:3px;animation:b 1s infinite}
+.dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-5px);opacity:1}}
+
+/* ---------- stock ---------- */
+.filters{display:flex;gap:8px;margin-bottom:12px}
+.filters button{border:1.5px solid var(--line);background:var(--sheet);border-radius:999px;padding:6px 14px;font-size:14px;font-weight:500}
+.filters button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
+.stock{background:var(--sheet);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.row{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:11px 14px;border-bottom:1px solid var(--line);align-items:center}
+.row:last-child{border-bottom:0}
+.row .nm{font-weight:600;line-height:1.25}
+.row .sub{font-size:13px;color:var(--muted);grid-column:1}
+.row .qty{grid-row:1 / span 2;grid-column:2;text-align:right;font-family:var(--display);font-weight:700;font-size:22px;line-height:1}
+.row .qty small{display:block;font-family:var(--body);font-weight:400;font-size:12px;color:var(--muted)}
+.bar{grid-column:1 / -1;height:4px;border-radius:2px;background:var(--ink-soft);margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--leaf)}
+.row.low .bar i{background:var(--turmeric)}
+.row.out .bar i{background:var(--chilli)}
+.row.out .qty{color:var(--chilli)}
+.row.low .qty{color:var(--turmeric-deep)}
+.row.flash{animation:fl 1.6s ease-out}
+@keyframes fl{0%{background:var(--turmeric-soft)}100%{background:var(--sheet)}}
+
+/* ---------- orders ---------- */
+.draft{background:var(--sheet);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.draft .who{display:flex;justify-content:space-between;gap:8px;font-weight:600}
+.draft .who span{font-weight:400;color:var(--muted);font-size:14px}
+.draft pre{white-space:pre-wrap;font-family:var(--body);background:#EFF6EF;border-radius:10px;padding:10px 12px;margin:10px 0;font-size:15px}
+.wa{display:inline-flex;align-items:center;gap:8px;background:var(--leaf);color:#fff;text-decoration:none;border-radius:999px;padding:8px 16px;font-weight:600}
+.note{color:var(--muted);font-size:14px}
+
+/* ---------- dock ---------- */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:6;padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+  background:linear-gradient(to top,var(--paper) 70%,rgba(247,248,245,0))}
+.tray{display:flex;gap:6px;margin:0 4px 8px;flex-wrap:wrap}
+.tray .t{position:relative}
+.tray img{width:54px;height:54px;object-fit:cover;border-radius:10px;border:2px solid var(--sheet);box-shadow:0 1px 4px rgba(30,47,77,.25)}
+.tray button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:0;background:var(--ink);color:#fff;font-size:13px;line-height:22px;padding:0}
+.bar-in{display:flex;align-items:flex-end;gap:8px;background:var(--sheet);border:1.5px solid var(--line);border-radius:30px;padding:6px 6px 6px 8px;
+  box-shadow:0 4px 18px rgba(30,47,77,.10)}
+.icon{flex:none;width:42px;height:42px;border-radius:50%;border:0;background:transparent;display:grid;place-items:center;color:var(--ink-2)}
+.icon:hover{background:var(--ink-soft)}
+.icon svg{width:24px;height:24px}
+textarea{flex:1;border:0;resize:none;outline:none;background:transparent;padding:10px 2px;max-height:120px;min-height:42px;line-height:1.35}
+textarea:focus-visible{outline:none}
+.bar-in:focus-within{border-color:var(--ink-2)}
+.mic{flex:none;width:54px;height:54px;border-radius:50%;border:0;background:var(--turmeric);color:var(--ink);display:grid;place-items:center;
+  box-shadow:0 3px 0 var(--turmeric-deep);transition:transform .08s}
+.mic:active{transform:translateY(2px);box-shadow:0 1px 0 var(--turmeric-deep)}
+.mic svg{width:26px;height:26px}
+.mic.rec{background:var(--chilli);color:#fff;box-shadow:0 0 0 0 rgba(194,59,34,.5);animation:pulse 1.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(194,59,34,.45)}100%{box-shadow:0 0 0 16px rgba(194,59,34,0)}}
+.rec-label{position:absolute;bottom:calc(100% - 4px);right:20px;background:var(--chilli);color:#fff;border-radius:999px;padding:4px 12px;font-size:14px;font-weight:600}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="brand"><span id="shopName">ShelfTalk</span><small id="shopSub">Talk to your shop's ledger</small></div>
+    <div style="display:flex;gap:8px">
+      <button class="hbtn" id="briefBtn"><span class="wide">Morning brief</span><span class="narrow">Brief</span></button>
+      <button class="hbtn" id="speakBtn" aria-pressed="false" title="Read replies aloud" aria-label="Read replies aloud"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="wave" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span class="lbl"> Off</span></button>
+    </div>
+  </div>
+  <div class="day" aria-label="Today at a glance">
+    <div class="fig"><b id="fSales">–</b><span>sold, last 24h</span></div>
+    <div class="fig"><b id="fProfit">–</b><span>profit, last 24h</span></div>
+    <div class="fig"><b id="fWeek">–</b><span>last 7 days</span></div>
+    <div class="fig warn"><b id="fLow">–</b><span>to reorder</span></div>
+  </div>
+  <nav role="tablist">
+    <button role="tab" aria-selected="true" data-tab="talk">Talk</button>
+    <button role="tab" aria-selected="false" data-tab="stock">Stock<span class="pill" id="lowPill" hidden></span></button>
+    <button role="tab" aria-selected="false" data-tab="orders">Orders</button>
+  </nav>
+</header>
+
+<main>
+  <section class="pane on" id="pane-talk" aria-label="Talk">
+    <div class="feed" id="feed" aria-live="polite"></div>
+  </section>
+
+  <section class="pane" id="pane-stock" aria-label="Stock">
+    <h2>Stock on the shelf</h2>
+    <div class="filters" id="filters">
+      <button aria-pressed="true" data-f="all">All</button>
+      <button aria-pressed="false" data-f="low">Running low</button>
+      <button aria-pressed="false" data-f="out">Out</button>
+    </div>
+    <div class="stock" id="stock"></div>
+  </section>
+
+  <section class="pane" id="pane-orders" aria-label="Orders">
+    <h2>Orders ready to send</h2>
+    <div id="drafts"></div>
+  </section>
+</main>
+
+<div class="dock">
+  <div class="tray" id="tray"></div>
+  <div class="bar-in">
+    <button class="icon" id="camBtn" title="Add photo of shelf, bill or khata" aria-label="Add photo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+    </button>
+    <input type="file" id="file" accept="image/*" multiple class="sr" tabindex="-1">
+    <label for="msg" class="sr">Message</label>
+    <textarea id="msg" rows="1" placeholder="Type, or tap the mic…"></textarea>
+    <button class="icon" id="sendBtn" aria-label="Send" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+    </button>
+    <button class="mic" id="micBtn" aria-label="Record voice note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let STATE = null, history = [], pending = [], busy = false, stockFilter = "all";
+let speak = false;
+try { speak = localStorage.getItem("st_speak") === "1"; } catch (e) {}
+
+const cur = () => STATE?.shop?.currency || "";
+const money = n => cur() + Math.round(n || 0).toLocaleString("en-IN");
+
+/* ---------------- state rendering ---------------- */
+function render(state, changedNames = []) {
+  STATE = state;
+  $("#shopName").textContent = state.shop.name;
+  $("#shopSub").textContent = `ShelfTalk · ${state.shop.city}`;
+  $("#fSales").textContent = money(state.today.revenue);
+  $("#fProfit").textContent = money(state.today.profit);
+  $("#fWeek").textContent = money(state.report.revenue);
+  const low = state.inventory.filter(i => i.status !== "ok").length;
+  $("#fLow").textContent = low;
+  $("#lowPill").hidden = !low; $("#lowPill").textContent = low;
+  renderStock(changedNames);
+  renderDrafts();
+}
+function renderStock(changed = []) {
+  const items = STATE.inventory.filter(i => stockFilter === "all" || i.status === stockFilter);
+  $("#stock").innerHTML = items.length ? items.map(i => {
+    const pct = Math.min(100, Math.round(100 * i.stock / Math.max(1, (i.reorder_level || 1) * 3)));
+    const tag = i.status === "out" ? "Out of stock" : i.status === "low" ? `Reorder at ${i.reorder_level}` : `${cur()}${i.sell_price} each`;
+    return `<div class="row ${i.status} ${changed.includes(i.name) ? "flash" : ""}">
+      <div class="nm">${esc(i.name)}</div>
+      <div class="qty">${+i.stock.toFixed(2)}<small>${esc(i.unit)}</small></div>
+      <div class="sub">${esc(tag)}${i.supplier_name ? " · " + esc(i.supplier_name) : ""}</div>
+      <div class="bar"><i style="width:${pct}%"></i></div></div>`;
+  }).join("") : `<div class="row"><div class="nm">Nothing here.</div><div class="sub">All items are stocked above their reorder level.</div></div>`;
+}
+function renderDrafts() {
+  const d = STATE.drafts;
+  $("#drafts").innerHTML = d.length ? d.map(x => `<div class="draft">
+      <div class="who">${esc(x.supplier)}<span>${esc(x.language || "")}</span></div>
+      <pre>${esc(x.message)}</pre>
+      <a class="wa" href="${esc(x.whatsapp_link)}" target="_blank" rel="noopener">Send on WhatsApp</a></div>`).join("")
+    : `<p class="note">No orders yet. Ask in Talk: “jo kam hai uska order bana do”.</p>`;
+}
+
+/* ---------------- feed ---------------- */
+function addMsg(html, cls) {
+  const el = document.createElement("div");
+  el.className = "msg " + cls; el.innerHTML = html;
+  $("#feed").appendChild(el); el.scrollIntoView({block: "end", behavior: "smooth"});
+  return el;
+}
+function showEmpty() {
+  const ex = ["10 Maggi aur 2 atta bik gaye", "What's running low?", "Is hafte kitna profit hua?",
+              "Jo kam hai uska order bana do", "Gupta ji se 10 toor dal aayi, ₹150 kilo"];
+  $("#feed").innerHTML = `<div class="empty"><p>Send a shelf photo, a supplier bill, a khata page or a voice note in any language. Or try one of these:</p>
+    <div class="chips">${ex.map(e => `<button class="chip">${esc(e)}</button>`).join("")}</div></div>`;
+  $("#feed").querySelectorAll(".chip").forEach(b => b.onclick = () => { $("#msg").value = b.textContent; send(); });
+}
+function addSlip(result) {
+  const tr = result.trace || [];
+  if (!tr.length) return;
+  const el = document.createElement("div");
+  el.className = "slip";
+  const lines = tr.map(t => `<li class="${t.ok ? (t.write ? "w" : "r") : "bad"}"><span class="k">${t.ok ? (t.write ? "✓" : "·") : "!"}</span><span>${esc(t.summary)}</span></li>`).join("");
+  const writes = tr.some(t => t.write && t.ok);
+  el.innerHTML = `<h3>What I did</h3><ul>${lines}</ul>
+    <div class="foot"><span>${esc(result.model || "")}</span>${writes ? `<button class="ghost">Undo</button>` : ""}</div>`;
+  const u = el.querySelector(".ghost");
+  if (u) u.onclick = async () => {
+    u.disabled = true;
+    const r = await fetch("/api/undo", {method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({request_id: result.request_id})}).then(r => r.json());
+    el.classList.add("undone"); u.textContent = `Undone (${r.undone})`;
+    render(r.state);
+  };
+  $("#feed").appendChild(el); el.scrollIntoView({block: "end", behavior: "smooth"});
+}
+
+function say(text) {
+  if (!speak || !("speechSynthesis" in window)) return;
+  const u = new SpeechSynthesisUtterance(text.replace(/[*_#]/g, ""));
+  u.lang = /[ऀ-ॿ]/.test(text) ? "hi-IN" : /[஀-௿]/.test(text) ? "ta-IN" : "en-IN";
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+}
+
+/* ---------------- sending ---------------- */
+async function post(url, fd) {
+  const res = await fetch(url, {method: "POST", body: fd});
+  const data = await res.json().catch(() => ({error: "The server returned an unreadable response."}));
+  if (!res.ok || data.error) throw new Error(data.error || `Request failed (${res.status})`);
+  return data;
+}
+async function runTurn(fd, userHtml, userText) {
+  if (busy) return; busy = true;
+  if ($("#feed .empty")) $("#feed").innerHTML = "";
+  addMsg(userHtml, "me");
+  const t = document.createElement("div");
+  t.className = "thinking"; t.innerHTML = `<span class="dots"><span></span><span></span><span></span></span>Checking the ledger…`;
+  $("#feed").appendChild(t); t.scrollIntoView({block: "end"});
+  try {
+    const r = await post(fd ? "/api/turn" : "/api/brief", fd || new FormData());
+    t.remove();
+    addSlip(r);
+    addMsg(esc(r.reply), "bot");
+    history.push({role: "user", text: userText || "(photo / voice note)"}, {role: "model", text: r.reply});
+    history = history.slice(-8);
+    const changed = (r.trace || []).filter(x => x.write && x.ok && x.item).map(x => x.item);
+    render(r.state, changed);
+    say(r.reply);
+  } catch (e) {
+    t.remove(); addMsg(esc(e.message), "err");
+  } finally { busy = false; }
+}
+function send(audioBlob) {
+  const text = $("#msg").value.trim();
+  if (!text && !pending.length && !audioBlob) return;
+  const fd = new FormData();
+  fd.append("text", text);
+  fd.append("history", JSON.stringify(history));
+  pending.forEach(p => fd.append("images", p.blob, "photo.jpg"));
+  if (audioBlob) fd.append("audio", audioBlob, "voice." + (audioBlob.type.includes("mp4") ? "m4a" : "webm"));
+  const thumbs = pending.length ? `<div class="attach">${pending.map(p => `<img src="${p.url}" alt="Attached photo">`).join("")}</div>` : "";
+  const voice = audioBlob ? `<div class="voice">🎙 Voice note</div>` : "";
+  runTurn(fd, thumbs + voice + esc(text), text);
+  $("#msg").value = ""; pending = []; drawTray(); syncSend();
+}
+
+/* ---------------- photos ---------------- */
+$("#camBtn").onclick = () => $("#file").click();
+$("#file").onchange = async e => {
+  for (const f of [...e.target.files].slice(0, 4 - pending.length)) {
+    const blob = await shrink(f);
+    pending.push({blob, url: URL.createObjectURL(blob)});
+  }
+  e.target.value = ""; drawTray(); syncSend();
+};
+function shrink(file, max = 1600) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(b => res(b || file), "image/jpeg", .85);
+    };
+    img.onerror = () => res(file);
+    img.src = URL.createObjectURL(file);
+  });
+}
+function drawTray() {
+  $("#tray").innerHTML = pending.map((p, i) => `<div class="t"><img src="${p.url}" alt="Photo ${i + 1} to send"><button aria-label="Remove photo" data-i="${i}">×</button></div>`).join("");
+  $("#tray").querySelectorAll("button").forEach(b => b.onclick = () => { pending.splice(+b.dataset.i, 1); drawTray(); syncSend(); });
+}
+
+/* ---------------- voice ---------------- */
+let rec = null, chunks = [], recTimer = null;
+$("#micBtn").onclick = async () => {
+  if (rec && rec.state === "recording") { rec.stop(); return; }
+  if (!navigator.mediaDevices?.getUserMedia) { addMsg("This browser can't record audio. Type instead.", "err"); return; }
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({audio: true}); }
+  catch { addMsg("Microphone permission was blocked. Allow it in the browser to send voice notes.", "err"); return; }
+  const mime = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg"].find(m => window.MediaRecorder?.isTypeSupported?.(m)) || "";
+  rec = new MediaRecorder(stream, mime ? {mimeType: mime} : undefined);
+  chunks = [];
+  rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+  rec.onstop = () => {
+    stream.getTracks().forEach(t => t.stop());
+    clearInterval(recTimer); $(".rec-label")?.remove();
+    $("#micBtn").classList.remove("rec"); $("#micBtn").setAttribute("aria-label", "Record voice note");
+    const blob = new Blob(chunks, {type: rec.mimeType || "audio/webm"});
+    if (blob.size > 1500) send(blob);
+  };
+  rec.start();
+  $("#micBtn").classList.add("rec"); $("#micBtn").setAttribute("aria-label", "Stop and send voice note");
+  const lab = document.createElement("div"); lab.className = "rec-label"; $(".dock").appendChild(lab);
+  let s = 0; lab.textContent = "Recording 0:00 · tap to send";
+  recTimer = setInterval(() => { s++; lab.textContent = `Recording ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")} · tap to send`; if (s >= 60) rec.stop(); }, 1000);
+};
+
+/* ---------------- misc wiring ---------------- */
+function syncSend() {
+  const has = $("#msg").value.trim() || pending.length;
+  $("#sendBtn").hidden = !has;
+}
+$("#msg").addEventListener("input", e => { e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; syncSend(); });
+$("#msg").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } });
+$("#sendBtn").onclick = () => send();
+$("#briefBtn").onclick = () => runTurn(null, "Morning brief, please", "Morning brief");
+function syncSpeak() { $("#speakBtn .lbl").textContent = speak ? " On" : " Off"; $("#speakBtn").setAttribute("aria-pressed", speak); $("#speakBtn").classList.toggle("on", speak); }
+$("#speakBtn").onclick = () => { speak = !speak; try { localStorage.setItem("st_speak", speak ? "1" : "0"); } catch (e) {} syncSpeak(); };
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.setAttribute("aria-selected", x === b));
+  document.querySelectorAll(".pane").forEach(p => p.classList.toggle("on", p.id === "pane-" + b.dataset.tab));
+  window.scrollTo({top: 0});
+});
+$("#filters").querySelectorAll("button").forEach(b => b.onclick = () => {
+  stockFilter = b.dataset.f;
+  $("#filters").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  renderStock();
+});
+
+syncSpeak(); showEmpty();
+fetch("/api/state").then(r => r.json()).then(s => render(s)).catch(() => addMsg("Can't reach the server. Check your connection and reload.", "err"));
+</script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "shop": {
+    "name": "Sai Kirana Store",
+    "owner": "Ramesh",
+    "city": "Pune",
+    "currency": "₹",
+    "language": "Hindi / English"
+  },
+  "suppliers": [
+    {"id": "s_gupta", "name": "Gupta Wholesale", "phone": "919800000001", "language": "Hindi", "categories": "staples, oil, atta, dal, sugar"},
+    {"id": "s_hul", "name": "Metro FMCG Distributors", "phone": "919800000002", "language": "English", "categories": "packaged foods, soaps, detergent, toothpaste, snacks"},
+    {"id": "s_dairy", "name": "Shree Krishna Dairy", "phone": "919800000003", "language": "Marathi", "categories": "milk, butter, curd, eggs"},
+    {"id": "s_bev", "name": "Coastal Beverages", "phone": "919800000004", "language": "English", "categories": "soft drinks, juices, water"}
+  ],
+  "items": [
+    {"id": "i_maggi", "name": "Maggi Noodles 70g", "aliases": ["maggi", "मैगी", "noodles"], "unit": "pack", "stock": 48, "reorder_level": 20, "cost_price": 12, "sell_price": 14, "supplier_id": "s_hul", "daily_sales": 9},
+    {"id": "i_parleg", "name": "Parle-G Biscuit 100g", "aliases": ["parle g", "parle", "पारले जी", "biscuit"], "unit": "pack", "stock": 60, "reorder_level": 25, "cost_price": 8.5, "sell_price": 10, "supplier_id": "s_hul", "daily_sales": 12},
+    {"id": "i_salt", "name": "Tata Salt 1kg", "aliases": ["salt", "namak", "नमक", "tata namak"], "unit": "pack", "stock": 14, "reorder_level": 10, "cost_price": 24, "sell_price": 28, "supplier_id": "s_gupta", "daily_sales": 3},
+    {"id": "i_atta", "name": "Aashirvaad Atta 5kg", "aliases": ["atta", "आटा", "aashirvaad", "wheat flour"], "unit": "bag", "stock": 6, "reorder_level": 5, "cost_price": 235, "sell_price": 265, "supplier_id": "s_gupta", "daily_sales": 2},
+    {"id": "i_oil", "name": "Fortune Sunflower Oil 1L", "aliases": ["oil", "tel", "तेल", "fortune oil", "sunflower oil"], "unit": "pouch", "stock": 18, "reorder_level": 8, "cost_price": 128, "sell_price": 145, "supplier_id": "s_gupta", "daily_sales": 3},
+    {"id": "i_toor", "name": "Toor Dal 1kg", "aliases": ["toor dal", "arhar dal", "तूर दाल", "अरहर दाल", "dal"], "unit": "kg", "stock": 4, "reorder_level": 6, "cost_price": 140, "sell_price": 165, "supplier_id": "s_gupta", "daily_sales": 2},
+    {"id": "i_sugar", "name": "Sugar 1kg", "aliases": ["sugar", "cheeni", "chini", "चीनी", "shakkar"], "unit": "kg", "stock": 22, "reorder_level": 10, "cost_price": 42, "sell_price": 48, "supplier_id": "s_gupta", "daily_sales": 4},
+    {"id": "i_rice", "name": "Basmati Rice 1kg", "aliases": ["rice", "chawal", "चावल", "basmati"], "unit": "kg", "stock": 25, "reorder_level": 10, "cost_price": 95, "sell_price": 115, "supplier_id": "s_gupta", "daily_sales": 3},
+    {"id": "i_tea", "name": "Red Label Tea 250g", "aliases": ["tea", "chai", "chai patti", "चाय", "चायपत्ती", "red label"], "unit": "pack", "stock": 11, "reorder_level": 6, "cost_price": 120, "sell_price": 140, "supplier_id": "s_hul", "daily_sales": 2},
+    {"id": "i_butter", "name": "Amul Butter 100g", "aliases": ["butter", "makhan", "मक्खन", "amul butter"], "unit": "pack", "stock": 3, "reorder_level": 8, "cost_price": 54, "sell_price": 60, "supplier_id": "s_dairy", "daily_sales": 3},
+    {"id": "i_milk", "name": "Milk 500ml", "aliases": ["milk", "doodh", "दूध", "amul milk"], "unit": "pouch", "stock": 30, "reorder_level": 20, "cost_price": 30, "sell_price": 33, "supplier_id": "s_dairy", "daily_sales": 25},
+    {"id": "i_eggs", "name": "Eggs (tray of 30)", "aliases": ["eggs", "egg tray", "anda", "अंडे", "अंडा"], "unit": "tray", "stock": 2, "reorder_level": 3, "cost_price": 180, "sell_price": 210, "supplier_id": "s_dairy", "daily_sales": 1},
+    {"id": "i_surf", "name": "Surf Excel 1kg", "aliases": ["surf", "surf excel", "detergent", "सर्फ"], "unit": "pack", "stock": 9, "reorder_level": 5, "cost_price": 125, "sell_price": 140, "supplier_id": "s_hul", "daily_sales": 1},
+    {"id": "i_colgate", "name": "Colgate Toothpaste 100g", "aliases": ["colgate", "toothpaste", "मंजन", "कोलगेट"], "unit": "tube", "stock": 15, "reorder_level": 6, "cost_price": 48, "sell_price": 56, "supplier_id": "s_hul", "daily_sales": 2},
+    {"id": "i_lays", "name": "Lay's Chips 50g", "aliases": ["lays", "chips", "चिप्स"], "unit": "pack", "stock": 0, "reorder_level": 15, "cost_price": 17, "sell_price": 20, "supplier_id": "s_hul", "daily_sales": 6},
+    {"id": "i_coke", "name": "Coca-Cola 750ml", "aliases": ["coke", "coca cola", "cold drink", "कोक", "कोल्ड ड्रिंक"], "unit": "bottle", "stock": 12, "reorder_level": 12, "cost_price": 34, "sell_price": 40, "supplier_id": "s_bev", "daily_sales": 5}
+  ]
+}
